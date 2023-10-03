@@ -251,5 +251,74 @@ module SoftwareVersion
         end
       end
     end
+
+    describe '#tokens' do
+      it 'handles epoch' do
+        expect(described_class.new('1:2.3').send(:tokens)).to eq [
+          described_class::Token.new(described_class::Token::EPOCH, 1),
+          described_class::Token.new(described_class::Token::NUMBER, 2),
+          described_class::Token.new(described_class::Token::NUMBER, 3),
+          described_class::Token.new(described_class::Token::EOV, nil)
+        ]
+      end
+
+      it 'drops useless zeros' do
+        expect(described_class.new('1.0.0beta').send(:tokens)).to eq [
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::PREVERSION, 'beta'),
+          described_class::Token.new(described_class::Token::EOV, nil)
+        ]
+        expect(described_class.new('1.0.0.beta').send(:tokens)).to eq [
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::PREVERSION, 'beta'),
+          described_class::Token.new(described_class::Token::EOV, nil)
+        ]
+        expect(described_class.new('1.0.1').send(:tokens)).to eq [
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::NUMBER, 0),
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::EOV, nil)
+        ]
+        expect(described_class.new('1.0u1').send(:tokens)).to eq [
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::NUMBER, 0),
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::EOV, nil)
+        ]
+      end
+
+      it 'drops fancy number separators' do
+        expect(described_class.new('1u2').send(:tokens)).to eq [
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::NUMBER, 2),
+          described_class::Token.new(described_class::Token::EOV, nil)
+        ]
+        expect(described_class.new('1u').send(:tokens)).to eq [
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::WORD, 'u'),
+          described_class::Token.new(described_class::Token::EOV, nil)
+        ]
+      end
+
+      it 'handles abbreviated pre-versions' do
+        expect(described_class.new('1b2').send(:tokens)).to eq [
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::PREVERSION, 'b'),
+          described_class::Token.new(described_class::Token::NUMBER, 2),
+          described_class::Token.new(described_class::Token::EOV, nil)
+        ]
+        expect(described_class.new('1b.2').send(:tokens)).to eq [
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::WORD, 'b'),
+          described_class::Token.new(described_class::Token::NUMBER, 2),
+          described_class::Token.new(described_class::Token::EOV, nil)
+        ]
+        expect(described_class.new('1b').send(:tokens)).to eq [
+          described_class::Token.new(described_class::Token::NUMBER, 1),
+          described_class::Token.new(described_class::Token::WORD, 'b'),
+          described_class::Token.new(described_class::Token::EOV, nil)
+        ]
+      end
+    end
   end
 end
