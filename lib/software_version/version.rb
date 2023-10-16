@@ -158,4 +158,10 @@ module SoftwareVersion
       false
     end
   end
+
+  # Convert the argument to a Version, unless it already is one.
+  def Version(version)
+    version.is_a?(Version) ? version : Version.new(version)
+  end
+  module_function :Version
 end

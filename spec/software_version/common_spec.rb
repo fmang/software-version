@@ -90,6 +90,18 @@ module SoftwareVersion
       expect(a > b).to be true
     end
 
+    describe 'conversion' do
+      it 'converts its argument to a version' do
+        expect(SoftwareVersion::Version('1.0')).to be_a Version
+        expect(SoftwareVersion::Version(Version.new('1.0'))).to be_a Version
+      end
+
+      it 'is aliased in the main module' do
+        expect(SoftwareVersion('1.0')).to be_a Version
+        expect(SoftwareVersion(Version.new('1.0'))).to be_a Version
+      end
+    end
+
     describe '#major' do
       subject { version.major }
 
