@@ -2,16 +2,10 @@ module SoftwareVersion
   class Version
     include Comparable
 
-    attr_reader :v,
-                :epoch,
-                :version,
-                :revision,
-                :release,
-                :arch
+    attr_reader :v
 
     def initialize(raw_version)
       @v = raw_version
-      parse_raw_version(to_s)
     end
 
     def <=>(other)
@@ -31,16 +25,20 @@ module SoftwareVersion
       to_s
     end
 
+    def epoch
+      tokens[0].value if tokens[0]&.type == Token::EPOCH
+    end
+
     def major
-      sv[0]
+      version_parts[0]
     end
 
     def minor
-      sv[1]
+      version_parts[1]
     end
 
     def patch
-      sv[2]
+      version_parts[2]
     end
 
     protected
@@ -214,32 +212,20 @@ module SoftwareVersion
       new_tokens
     end
 
-    # parse the raw version to separate the version, the epoch and the revision
-    def parse_raw_version(raw_version)
-      version = raw_version
+    # Return the first number sequence in the version as an array of Integer,
+    # skipping the epoch.
+    def version_parts
+      return @version_parts if @version_parts
 
-      if (parsed_raw = version.match(/\A([^:]*):(.+)\z/))
-        @epoch = parsed_raw[1]
-        version = parsed_raw[2]
-      else
-        @epoch = '0'
+      parts = []
+      tokens.each do |t|
+        if t.type == Token::NUMBER
+          parts << t.value
+        elsif !parts.empty?
+          break
+        end
       end
-
-      if (parsed_release = version.match(/(.*)\.(el[4-8](?:_\d+(?:\.\d+)?)?)/))
-        version = parsed_release[1]
-        @release = parsed_release[2]
-      else
-        @release = '0'
-      end
-
-      @version, @revision = version.split('-', 2)
-      @version ||= version
-      @revision ||= '0'
-    end
-
-    # Parse the version to get the major, minor and patch parts
-    def sv
-      @sv ||= version.scan(/(?:\d+|[a-zA-Z]+(?>\d+)?)/)
+      @version_parts = parts
     end
   end
 

@@ -102,6 +102,12 @@ module SoftwareVersion
       end
     end
 
+    specify '#epoch' do
+      expect(Version.new('').epoch).to be_nil
+      expect(Version.new('1.0').epoch).to be_nil
+      expect(Version.new('1:1.0').epoch).to eq 1
+    end
+
     describe '#major' do
       subject { version.major }
 
@@ -126,7 +132,7 @@ module SoftwareVersion
           let(:version) { Version.new('11.22.33') }
 
           it 'returns 11' do
-            expect(subject).to eq '11'
+            expect(subject).to eq 11
           end
         end
 
@@ -134,7 +140,7 @@ module SoftwareVersion
           let(:version) { Version.new('11.22') }
 
           it 'returns 11' do
-            expect(subject).to eq '11'
+            expect(subject).to eq 11
           end
         end
 
@@ -142,7 +148,7 @@ module SoftwareVersion
           let(:version) { Version.new('11') }
 
           it 'returns 11' do
-            expect(subject).to eq '11'
+            expect(subject).to eq 11
           end
         end
       end
@@ -172,7 +178,7 @@ module SoftwareVersion
           let(:version) { Version.new('11.22.33') }
 
           it 'returns 22' do
-            expect(subject).to eq '22'
+            expect(subject).to eq 22
           end
         end
 
@@ -180,7 +186,7 @@ module SoftwareVersion
           let(:version) { Version.new('11.22') }
 
           it 'returns 22' do
-            expect(subject).to eq '22'
+            expect(subject).to eq 22
           end
         end
 
@@ -218,7 +224,7 @@ module SoftwareVersion
           let(:version) { Version.new('11.22.33.44') }
 
           it 'returns 33' do
-            expect(subject).to eq '33'
+            expect(subject).to eq 33
           end
         end
 
@@ -226,7 +232,7 @@ module SoftwareVersion
           let(:version) { Version.new('11.22.33') }
 
           it 'returns 33' do
-            expect(subject).to eq '33'
+            expect(subject).to eq 33
           end
         end
 
@@ -249,8 +255,8 @@ module SoftwareVersion
         context 'with 19.1R2-S8' do
           let(:version) { Version.new('19.1R2-S8') }
 
-          it 'returns R2' do
-            expect(subject).to eq 'R2'
+          it 'returns 22' do
+            expect(subject).to eq 2
           end
         end
 
@@ -258,7 +264,7 @@ module SoftwareVersion
           let(:version) { Version.new('KB.16.10.0012') }
 
           it 'returns 10' do
-            expect(subject).to eq '10'
+            expect(subject).to eq 12
           end
         end
       end
