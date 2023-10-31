@@ -11,7 +11,8 @@ module SoftwareVersion
     def <=>(other)
       other_tokens = other.is_a?(Version) ? other.tokens : parse(other.to_s)
       tokens.zip(other_tokens) do |left, right|
-        cmp = left <=> right
+        cmp = left[0] <=> right[0]
+        cmp = left[1] <=> right[1] if cmp == 0
         return cmp if cmp != 0
       end
       0
@@ -26,7 +27,7 @@ module SoftwareVersion
     end
 
     def epoch
-      tokens[0].value if tokens[0]&.type == Token::EPOCH
+      tokens[0][1] if !tokens.empty? && tokens[0][0] == Token::EPOCH
     end
 
     def major
@@ -43,7 +44,7 @@ module SoftwareVersion
 
     protected
 
-    class Token < Struct.new(:type, :value)
+    module Token
       # Token types. Their value must be ordered such that :
       #
       #     1alpha (PREVERSION)
@@ -71,11 +72,6 @@ module SoftwareVersion
       DOT = 51
       NUMBER = 52
       EPOCH = 60
-
-      def <=>(other)
-        cmp = type <=> other.type
-        cmp == 0 ? value <=> other.value : cmp
-      end
     end
 
     # Returns an Array of Token. It is fully loaded and cached to boost future
@@ -116,9 +112,9 @@ module SoftwareVersion
       commit = ->() {
         case chunk_type
         when nil then return
-        when Token::NUMBER then tokens << Token.new(Token::NUMBER, chunk_value.to_i)
-        when Token::WORD then tokens << Token.new(Token::WORD, chunk_value.downcase)
-        else tokens << Token.new(chunk_type, chunk_value)
+        when Token::NUMBER then tokens << [Token::NUMBER, chunk_value.to_i]
+        when Token::WORD then tokens << [Token::WORD, chunk_value.downcase]
+        else tokens << [chunk_type, chunk_value]
         end
         chunk_type = nil
         chunk_value = ''
@@ -130,7 +126,7 @@ module SoftwareVersion
         chunk_value << c
       end
       commit.call
-      tokens << Token.new(Token::EOV, nil)
+      tokens << [Token::EOV, nil]
       tokens
     end
 
@@ -141,12 +137,12 @@ module SoftwareVersion
       literal_tokens = lex(version_string)
       literal_tokens << nil # Sentinel for each_cons.
       literal_tokens.each_cons(2) do |current, ahead|
-        case current.type
+        case current[0]
         when Token::NUMBER
           # When emitting a zero number followed by a colon, we turn it into
           # an EPOCH so that 1:1 > 2, as most Linux distributions expect.
-          if ahead.type == Token::COLON
-            semantic_tokens << Token.new(Token::EPOCH, current.value)
+          if ahead[0] == Token::COLON
+            semantic_tokens << [Token::EPOCH, current[1]]
           else
             semantic_tokens << current
           end
@@ -167,27 +163,27 @@ module SoftwareVersion
         when Token::COLON
 
         when Token::WORD
-          case current.value
+          case current[1]
           # Some special words are just fancy ways of making a subversion.
           # Semantically, they are nothing more than dots, so 1u1 = 1.1. Some
           # softwares have versions like 1a, 1b, 1c, so we skip these word
           # tokens only when immediately followed by a number.
           when 'r', 'u', 'p', 'v'
-            semantic_tokens << current unless ahead.type == Token::NUMBER
+            semantic_tokens << current unless ahead[0] == Token::NUMBER
           when 'rev', 'revision', 'update', 'patch'
             # Drop.
           # 52.0a2 is assumed to mean 52.0alpha2, while 52b would be the
           # version before 52c. We distinguish them with the token ahead.
           when 'a', 'b'
-            if ahead.type == Token::NUMBER
-              semantic_tokens << Token.new(Token::PREVERSION, current.value)
+            if ahead[0] == Token::NUMBER
+              semantic_tokens << [Token::PREVERSION, current[1]]
             else
               semantic_tokens << current
             end
           # Non-abbreviated pre-versions may or may not be followed by a
           # number. 1.0alpha < 1.0.
           when 'alpha', 'beta', 'rc'
-            semantic_tokens << Token.new(Token::PREVERSION, current.value)
+            semantic_tokens << [Token::PREVERSION, current[1]]
           # Unknown words are left intact.
           else
             semantic_tokens << current
@@ -209,8 +205,8 @@ module SoftwareVersion
       new_tokens = []
       held_tokens = []
       tokens.each do |token|
-        if token.type == Token::NUMBER
-          if token.value == 0
+        if token[0] == Token::NUMBER
+          if token[1] == 0
             held_tokens << token
             next
           else
@@ -230,8 +226,8 @@ module SoftwareVersion
 
       parts = []
       tokens.each do |t|
-        if t.type == Token::NUMBER
-          parts << t.value
+        if t[0] == Token::NUMBER
+          parts << t[1]
         elsif !parts.empty?
           break
         end
