@@ -1,5 +1,7 @@
 # Software Version
 
+[![Run RSpec tests](https://github.com/Cyberwatch/software-version/actions/workflows/rspec.yml/badge.svg)](https://github.com/Cyberwatch/software-version/actions/workflows/rspec.yml)
+
 ## Description
 
 Compare two software versions with the full pattern for Linux Packages (Centos, Redhat, Arch, Debian Ubuntu) and Windows Applications
