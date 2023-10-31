@@ -1,7 +1,5 @@
 # Software Version
 
-[![Build Status](https://travis-ci.org/Cyberwatch/sofware-version.svg?branch=master)](https://travis-ci.org/Cyberwatch/sofware-version)
-
 ## Description
 
 Compare two software versions with the full pattern for Linux Packages (Centos, Redhat, Arch, Debian Ubuntu) and Windows Applications
@@ -20,7 +18,7 @@ SoftwareVersion::Version.new('6:1.5.0-ubuntu1.2~release1804') < SoftwareVersion:
 
 ## Requirements
 
-- Ruby >= 2.6
+- Ruby >= 3.2
 
 ## Test
 
