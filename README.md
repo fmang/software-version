@@ -41,5 +41,6 @@ and send a pull request.
 
 ## Copyright
 
-Copyright (c) 2018-2021 Florian Wininger. See LICENSE for details.
-Copyright (c) 2019-2021 Cyberwatch. See LICENSE for details.
+Copyright (c) 2018-2023 Florian Wininger. See LICENSE for details.
+Copyright (c) 2023 Frédéric Mangano. See LICENSE for details.
+Copyright (c) 2019-2023 Cyberwatch. See LICENSE for details.
