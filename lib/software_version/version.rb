@@ -110,17 +110,28 @@ module SoftwareVersion
     # Cut the version string into literal tokens, without further
     # interpretation. 1:2.3beta becomes NUMBER COLON NUMBER NUMBER WORD EOV. Returns an Array of Token.
     def lex(version_string)
-      chunks = version_string.chars.chunk(&CHARACTERS_TOKEN)
-      literal_tokens = chunks.filter_map do |type, value|
-        value = value.join
-        case type
-        when Token::NUMBER then Token.new(Token::NUMBER, value.to_i)
-        when Token::WORD then Token.new(Token::WORD, value.downcase)
-        else Token.new(type, value)
+      tokens = []
+      chunk_type = nil
+      chunk_value = ''
+      commit = ->() {
+        case chunk_type
+        when nil then return
+        when Token::NUMBER then tokens << Token.new(Token::NUMBER, chunk_value.to_i)
+        when Token::WORD then tokens << Token.new(Token::WORD, chunk_value.downcase)
+        else tokens << Token.new(chunk_type, chunk_value)
         end
+        chunk_type = nil
+        chunk_value = ''
+      }
+      version_string.each_char do |c|
+        char_type = CHARACTERS_TOKEN[c]
+        commit.call if chunk_type != char_type
+        chunk_type = char_type
+        chunk_value << c
       end
-      literal_tokens << Token.new(Token::EOV, nil)
-      literal_tokens
+      commit.call
+      tokens << Token.new(Token::EOV, nil)
+      tokens
     end
 
     # Return an enumarable of semantic Token from a version string.
