@@ -27,7 +27,11 @@ module SoftwareVersion
     end
 
     def epoch
-      tokens[0][1] if !tokens.empty? && tokens[0][0] == Token::EPOCH
+      if !tokens.empty? && tokens[0][0] == Token::EPOCH
+        tokens[0][1]
+      else
+        0
+      end
     end
 
     def major
@@ -232,6 +236,7 @@ module SoftwareVersion
           break
         end
       end
+      parts << 0 while parts.length < 3
       @version_parts = parts
     end
   end
