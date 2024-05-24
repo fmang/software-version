@@ -26,6 +26,10 @@ module SoftwareVersion
       to_s
     end
 
+    def as_json
+      to_s
+    end
+
     def epoch
       if !tokens.empty? && tokens[0][0] == Token::EPOCH
         tokens[0][1]
