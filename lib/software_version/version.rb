@@ -56,25 +56,25 @@ module SoftwareVersion
       # Token types. Their value must be ordered such that :
       #
       #     1alpha (PREVERSION)
+      #   < 1~1 (TILDE)
       #   < 1 (EOV)
       #   < 1-1 (DASH)
       #   < 1+1 (PLUS)
-      #   < 1~1 (TILDE)
       #   < 1g (WORD)
       #   < 1_1 (UNDERSCORE)
       #   < 1.1 (DOT)
       #   < 1:1 (EPOCH)
       #   < ^ (MAX)
       #
-      # COLON, DOT and TILDE are only used as a literal tokens and are stripped
-      # from the semantic tokens. Their only use is to separate numbers. Some
-      # special words are stripped for the same reason. Thus: 1.1 = 1~1 = 1u1.
+      # COLON and DOT are only used as a literal tokens and are stripped from
+      # the semantic tokens. Their only use is to separate numbers. Some
+      # special words are stripped for the same reason. Thus: 1.1 = 1u1.
       #
       PREVERSION = 10
+      TILDE = 11
       EOV = 20 # end of version
       DASH = 30
       PLUS = 31
-      TILDE = 32
       COLON = 33
       CARET = 34
       WORD = 40
@@ -161,10 +161,6 @@ module SoftwareVersion
 
         # Dots are always dropped because they bear no semantic value.
         when Token::DOT
-
-        # Tildes are ignored unconditionally because they are usually used
-        # for preversions without extra semantic meaning.
-        when Token::TILDE
 
         # Underscores are sometimes used to specify subversions on
         # distributions, like el6_7. They’re like dots, so dropped.

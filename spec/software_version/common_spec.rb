@@ -99,6 +99,12 @@ module SoftwareVersion
       expect(a < c).to be true
     end
 
+    it 'treats TILDE as a preversion suffix' do
+      # Cas réel de python3-cryptography sur la branche stable-sec de Debian, validé par dpkg :
+      # `dpkg: warning: downgrading python3-cryptography from 38.0.4-3 to 38.0.4-3~deb12u1`
+      expect(Version.new('38.0.4-3~deb12u1')).to be < Version.new('38.0.4-3')
+    end
+
     describe 'conversion' do
       it 'converts its argument to a version' do
         expect(SoftwareVersion::Version('1.0')).to be_a Version
