@@ -241,6 +241,19 @@ module SoftwareVersion
           [described_class::Token::EOV, nil]
         ]
       end
+
+      it 'normalizes the separators' do
+        expect(described_class.new('1~light').send(:tokens)).to eq [
+          [described_class::Token::NUMBER, 1],
+          [described_class::Token::EOV, nil]
+        ]
+        expect(described_class.new('2~dfsg~git2024').send(:tokens)).to eq [
+          [described_class::Token::NUMBER, 2],
+          [described_class::Token::TILDE, '~'],
+          [described_class::Token::NUMBER, 2024],
+          [described_class::Token::EOV, nil]
+        ]
+      end
     end
   end
 end

@@ -215,14 +215,14 @@ module SoftwareVersion
         end
       end
 
-      normalize(semantic_tokens)
+      normalize_separators(normalize_zeroes(semantic_tokens))
     end
 
     # Normalize versions by dropping useless zeroes in order to have 1.0.0 = 1.
     # This step is performed after semantic parsing because we want 1.0.r1 ≠
     # 1r1, but also 1.0.noarch = 1.noarch.
     # Token::MAX should work as Token::NUMBER so 6.^ != 6.0.^ and 6.0.^ < 6.1
-    def normalize(tokens)
+    def normalize_zeroes(tokens)
       new_tokens = []
       held_tokens = []
       tokens.each do |token|
@@ -236,6 +236,22 @@ module SoftwareVersion
         end
         held_tokens.clear
         new_tokens << token
+      end
+      new_tokens
+    end
+
+    SEPARATORS = [Token::TILDE, Token::PLUS, Token::DASH].freeze
+
+    # After dropping multi-letter words, we might get consecutive separators or
+    # trailing separators. Let’s drop them so that they don’t impact the
+    # comparison. For example, `1.0~light` will be equal to `1.0`.
+    def normalize_separators(tokens)
+      new_tokens = []
+      tokens.each_cons(2) do |current, ahead|
+        if SEPARATORS.include?(current)
+          next if ahead == Token::EOV || SEPARATORS.include?(ahead)
+        end
+        new_tokens << current
       end
       new_tokens
     end
