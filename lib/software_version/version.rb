@@ -202,9 +202,11 @@ module SoftwareVersion
           # number. 1.0alpha < 1.0.
           when 'alpha', 'beta', 'rc'
             semantic_tokens << [Token::PREVERSION, current[1]]
-          # Unknown words are left intact.
+          # Single-letter words are left intact. Longer words are ignored
+          # because they are unlikely to carry meaningful information regaring
+          # version comparison.
           else
-            semantic_tokens << current
+            semantic_tokens << current if current[1].length == 1
           end
 
         # Other tokens like + and - are left intact.
